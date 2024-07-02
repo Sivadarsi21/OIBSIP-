@@ -1,0 +1,169 @@
+import java.util.Scanner;
+import java.util.*; 
+class User
+ { String username;
+   String password;
+   public User(String usernm,String pwd)
+   { username = usernm;
+     password = pwd;
+   }
+   public String getUsername() 
+   { return username;
+   }
+   public void setUsername(String usernm) 
+   { username = usernm;
+   }
+   public String getPassword() 
+   { return password;
+   }
+   public void setPassword(String pwd)
+   { password = pwd;
+   }
+ }
+class UserData
+ { Map<String, User> userd = new HashMap<>();
+   public UserData()
+    { userd.put("Siva",new User("Siva", "Siva2004"));
+    }
+   public User authenticate(String usernm,String pwd) 
+    { User user1 = userd.get(usernm);
+      if (user1!=null && user1.getPassword().equals(pwd))
+        { return user1;
+        }
+      return null;
+    }
+   public void addUser(User userg)
+    { userd.put(userg.getUsername(),userg);
+    }
+}
+class Exam
+{ private static final int duration=10*60;
+  private static final Question[] questions = {new Question("who is the richest person in the world?", new String[]{"Bernard Arnault", "Mukesh Ambani", "Ratan Tata",                 "None"}, 0), new Question("Who invented Java?", new String[]{"Brendan Eich", "Guido van Rossum", "James Gosling","DennisRitchie"},2) };                                           
+  public void start(Scanner scanner, User user)
+   { Timer timer = new Timer();
+     timer.schedule(new TimerTask() { public void run()
+                                      { System.out.println("Time is up! Exam submitted automatically.");
+                                        submit();
+                                        System.exit(0);
+                                      }
+                                    },duration*1000);
+     for (Question question : questions)
+      { System.out.println(question.getqtext());
+        for(int i=0;i<question.getopts().length;i++)
+          { System.out.println((i + 1) + ". " + question.getopts()[i]);
+          }
+        int answer = scanner.nextInt();
+        question.setUserAnswer(answer - 1);
+      }
+     timer.cancel();
+     submit();
+    }
+ void submit()
+  { int score = 0;
+    for(Question question:questions) 
+     { if(question.isCorrect())
+        { score++;
+        }
+     }
+    System.out.println("Exam finished. Your score: " + score + "/" + questions.length);
+  }
+}
+class Question
+{ String questionText;
+  String[] options;
+  int correctAnswer;
+  int userAnswer;
+  public Question(String qtext, String[] opts,int crtans)
+   { questionText=qtext;
+     options = opts;
+     correctAnswer = crtans;
+   }
+  public String getqtext() 
+   { return questionText;
+   }
+  public String[] getopts()
+   { return options;
+   }
+  public void setUserAnswer(int usrans)
+   { userAnswer=usrans;
+   }
+  public boolean isCorrect()
+   { return userAnswer==correctAnswer;
+   }
+}
+class Online
+ { private static User cUser=null;
+   private static UserData userdb=new UserData();
+   private static Exam exam=new Exam();
+   public static void select()
+    { Scanner obj=new Scanner(System.in);
+      while(true)
+       { System.out.println("Welcome to Online Examination System");
+         if(cUser==null) 
+          { System.out.println("1.Login");
+            System.out.println("2.Exit");
+            int choice=obj.nextInt();
+            obj.nextLine();
+            if(choice==1) 
+              login(obj);
+            else 
+              break;
+          }
+        else
+           { System.out.println("1.Update Profile");
+             System.out.println("2.Update Password");
+             System.out.println("3.Take Exam");
+             System.out.println("4.Logout");
+             int choice =obj.nextInt();
+             obj.nextLine(); 
+             if (choice==1)
+               updateProfile(obj);
+             else if(choice==2)
+               updatePassword(obj);
+             else if(choice==3) 
+               takeExam(obj);
+             else if(choice==4)
+               logout();
+           }
+       }
+     obj.close();
+    }
+   private static void login(Scanner obj)
+    { System.out.print("Enter username: ");
+      String username = obj.nextLine();
+      System.out.print("Enter password: ");
+      String password =obj.nextLine();
+      User user = userdb.authenticate(username, password);
+      if(user!=null)
+       { cUser = user;
+         System.out.println("Login successful!");
+       }
+      else
+       { System.out.println("Invalid username or password!");
+       }
+    }
+    private static void updateProfile(Scanner scanner)
+    { System.out.print("Enter new username: ");
+      String newUsername = scanner.nextLine();
+      cUser.setUsername(newUsername);
+      System.out.println("Profile updated!");
+    }
+    private static void updatePassword(Scanner scanner)
+    { System.out.print("Enter new password: ");
+      String newPassword = scanner.nextLine();
+      cUser.setPassword(newPassword);
+      System.out.println("Password updated!");
+    }
+    private static void takeExam(Scanner scanner)
+    { exam.start(scanner, cUser);
+    }
+    private static void logout() 
+    { cUser = null;
+      System.out.println("Logged out successfully!");
+    }
+}
+class Main
+{ public static void main(String [] args)
+  { Online.select();
+   }
+}
